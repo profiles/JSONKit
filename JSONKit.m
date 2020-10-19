@@ -987,9 +987,9 @@ static void _JKDictionaryRemoveObjectWithEntry(JKDictionary *dictionary, JKHashT
     atEntry->keyHash = 0UL;
     atEntry->key     = NULL;
     atEntry->object  = NULL;
-    NSUInteger addKeyEntry = keyHash % dictionary->capacity, addIdx = 0UL;
+        NSUInteger addIdx = 0UL;
     for(addIdx = 0UL; addIdx < dictionary->capacity; addIdx++) {
-      JKHashTableEntry *atAddEntry = &dictionary->entry[((addKeyEntry + addIdx) % dictionary->capacity)];
+            JKHashTableEntry *atAddEntry = &dictionary->entry[(addIdx % dictionary->capacity)];
       if(JK_EXPECT_T(atAddEntry->key == NULL)) { NSCParameterAssert((atAddEntry->keyHash == 0UL) && (atAddEntry->object == NULL)); atAddEntry->key = key; atAddEntry->object = object; atAddEntry->keyHash = keyHash; break; }
     }
   }
@@ -997,9 +997,9 @@ static void _JKDictionaryRemoveObjectWithEntry(JKDictionary *dictionary, JKHashT
 
 static void _JKDictionaryAddObject(JKDictionary *dictionary, NSUInteger keyHash, id key, id object) {
   NSCParameterAssert((dictionary != NULL) && (key != NULL) && (object != NULL) && (dictionary->count < dictionary->capacity) && (dictionary->entry != NULL));
-  NSUInteger keyEntry = keyHash % dictionary->capacity, idx = 0UL;
+    NSUInteger idx = 0UL;
   for(idx = 0UL; idx < dictionary->capacity; idx++) {
-    NSUInteger entryIdx = (keyEntry + idx) % dictionary->capacity;
+        NSUInteger entryIdx = idx % dictionary->capacity;
     JKHashTableEntry *atEntry = &dictionary->entry[entryIdx];
     if(JK_EXPECT_F(atEntry->keyHash == keyHash) && JK_EXPECT_T(atEntry->key != NULL) && (JK_EXPECT_F(key == atEntry->key) || JK_EXPECT_F(CFEqual(atEntry->key, key)))) { _JKDictionaryRemoveObjectWithEntry(dictionary, atEntry); }
     if(JK_EXPECT_T(atEntry->key == NULL)) { NSCParameterAssert((atEntry->keyHash == 0UL) && (atEntry->object == NULL)); atEntry->key = key; atEntry->object = object; atEntry->keyHash = keyHash; dictionary->count++; return; }
@@ -1018,10 +1018,10 @@ static void _JKDictionaryAddObject(JKDictionary *dictionary, NSUInteger keyHash,
 static JKHashTableEntry *_JKDictionaryHashTableEntryForKey(JKDictionary *dictionary, id aKey) {
   NSCParameterAssert((dictionary != NULL) && (dictionary->entry != NULL) && (dictionary->count <= dictionary->capacity));
   if((aKey == NULL) || (dictionary->capacity == 0UL)) { return(NULL); }
-  NSUInteger        keyHash = CFHash(aKey), keyEntry = (keyHash % dictionary->capacity), idx = 0UL;
+    NSUInteger        keyHash = CFHash(aKey), idx = 0UL;
   JKHashTableEntry *atEntry = NULL;
   for(idx = 0UL; idx < dictionary->capacity; idx++) {
-    atEntry = &dictionary->entry[(keyEntry + idx) % dictionary->capacity];
+        atEntry = &dictionary->entry[idx % dictionary->capacity];
     if(JK_EXPECT_T(atEntry->keyHash == keyHash) && JK_EXPECT_T(atEntry->key != NULL) && ((atEntry->key == aKey) || CFEqual(atEntry->key, aKey))) { NSCParameterAssert(atEntry->object != NULL); return(atEntry); break; }
     if(JK_EXPECT_F(atEntry->key == NULL)) { NSCParameterAssert(atEntry->object == NULL); return(NULL); break; } // If the key was in the table, we would have found it by now.
   }
